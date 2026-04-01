@@ -12,4 +12,9 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 
 [build-dependencies]
-cudaforge = "0.1.2"
+cudaforge = { version = "0.1.2", optional = true }
+
+[features]
+default = ["nvcc"]
+nvcc = ["dep:cudaforge"]
+moe = ["nvcc"]

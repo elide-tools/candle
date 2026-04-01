@@ -224,6 +224,27 @@ impl CudaDevice {
         })
     }
 
+    /// Convert a kernel module's payload to a [`cudarc::nvrtc::Ptx`] ready
+    /// for loading. When candle-kernels was built with nvcc the payload is
+    /// already compiled PTX and this is a trivial conversion.  When nvcc was
+    /// absent at build time (`candle_kernels::RUNTIME_COMPILE == true`) the
+    /// payload is raw CUDA source which we compile on the fly via nvrtc.
+    fn module_to_ptx(mdl: &kernels::Module) -> Result<cudarc::nvrtc::Ptx> {
+        if kernels::RUNTIME_COMPILE {
+            let opts = cudarc::nvrtc::CompileOptions {
+                options: vec![
+                    "--expt-relaxed-constexpr".into(),
+                    "-std=c++17".into(),
+                    "-O3".into(),
+                ],
+                ..Default::default()
+            };
+            cudarc::nvrtc::compile_ptx_with_opts(mdl.ptx(), opts).w()
+        } else {
+            Ok(mdl.ptx().into())
+        }
+    }
+
     pub fn get_or_load_func(&self, fn_name: &str, mdl: &kernels::Module) -> Result<CudaFunc> {
         let ms = self.modules.read().unwrap();
         if let Some(mdl) = ms.mdls[mdl.index()].as_ref() {
@@ -235,7 +256,8 @@ impl CudaDevice {
         }
         drop(ms);
         let mut ms = self.modules.write().unwrap();
-        let cuda_module = self.context.load_module(mdl.ptx().into()).w()?;
+        let ptx = Self::module_to_ptx(mdl)?;
+        let cuda_module = self.context.load_module(ptx).w()?;
         ms.mdls[mdl.index()] = Some(cuda_module.clone());
         let func = cuda_module.load_function(fn_name).w()?;
         Ok(CudaFunc {

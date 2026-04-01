@@ -2,6 +2,11 @@ mod ptx {
     include!(concat!(env!("OUT_DIR"), "/ptx.rs"));
 }
 
+/// `true` when the crate was built without nvcc. In this mode, [`Module::ptx()`]
+/// returns raw CUDA source (`.cu`) rather than compiled PTX. The consumer
+/// must compile it at runtime via nvrtc before loading it onto a device.
+pub const RUNTIME_COMPILE: bool = cfg!(candle_kernels_runtime_compile);
+
 #[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Id {
@@ -34,6 +39,8 @@ pub const ALL_IDS: [Id; 11] = [
 
 pub struct Module {
     index: usize,
+    /// Pre-compiled PTX when nvcc was available at build time,
+    /// or raw CUDA source (`.cu`) when `RUNTIME_COMPILE` is true.
     ptx: &'static str,
 }
 
@@ -42,6 +49,9 @@ impl Module {
         self.index
     }
 
+    /// Returns either pre-compiled PTX or raw CUDA source, depending on
+    /// whether nvcc was available at build time. Check [`RUNTIME_COMPILE`]
+    /// to determine which variant this is.
     pub fn ptx(&self) -> &'static str {
         self.ptx
     }
@@ -79,4 +89,5 @@ mdl!(SORT, Sort);
 mdl!(TERNARY, Ternary);
 mdl!(UNARY, Unary);
 
+#[cfg(feature = "moe")]
 pub mod ffi;
