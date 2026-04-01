@@ -17,4 +17,3 @@ cudaforge = { version = "0.1.2", optional = true }
 [features]
 default = ["nvcc"]
 nvcc = ["dep:cudaforge"]
-moe = ["nvcc"]

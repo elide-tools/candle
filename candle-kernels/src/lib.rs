@@ -21,9 +21,12 @@ pub enum Id {
     Sort,
     Ternary,
     Unary,
+    MoeWmma,
+    MoeGguf,
+    MoeWmmaGguf,
 }
 
-pub const ALL_IDS: [Id; 11] = [
+pub const ALL_IDS: [Id; 14] = [
     Id::Affine,
     Id::Binary,
     Id::Cast,
@@ -35,6 +38,9 @@ pub const ALL_IDS: [Id; 11] = [
     Id::Sort,
     Id::Ternary,
     Id::Unary,
+    Id::MoeWmma,
+    Id::MoeGguf,
+    Id::MoeWmmaGguf,
 ];
 
 pub struct Module {
@@ -88,6 +94,6 @@ mdl!(REDUCE, Reduce);
 mdl!(SORT, Sort);
 mdl!(TERNARY, Ternary);
 mdl!(UNARY, Unary);
-
-#[cfg(feature = "moe")]
-pub mod ffi;
+mdl!(MOE_WMMA, MoeWmma);
+mdl!(MOE_GGUF, MoeGguf);
+mdl!(MOE_WMMA_GGUF, MoeWmmaGguf);

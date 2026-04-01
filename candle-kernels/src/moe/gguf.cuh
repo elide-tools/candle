@@ -1231,7 +1231,7 @@ static __device__ __forceinline__ float vec_dot_q6_K_q8_1(
     return vec_dot_q6_K_q8_1_impl_mmvq(vl, vh, u, scales, bq6_K->d, d8);
 }
 
-static __global__ void quantize_q8_1(const float * __restrict__ x, void * __restrict__ vy, const int kx, const int kx_padded) {
+extern "C" __global__ void moe_quantize_q8_1(const float * __restrict__ x, void * __restrict__ vy, const int kx, const int kx_padded) {
     const int ix = blockDim.x*blockIdx.x + threadIdx.x;
     if (ix >= kx_padded) {
         return;
